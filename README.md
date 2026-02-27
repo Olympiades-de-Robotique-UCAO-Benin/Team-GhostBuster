@@ -4,6 +4,7 @@
 
 ![ORC 2026](https://img.shields.io/badge/ORC_2026-Compétition_Officielle-10b981?style=for-the-badge)
 ![Équipe #4](https://img.shields.io/badge/Équipe-%234-10b981?style=for-the-badge)
+![EGEI](https://img.shields.io/badge/EGEI-10b981?style=for-the-badge)
 ![UCAO-UUC](https://img.shields.io/badge/UCAO--UUC-Bénin-0057A8?style=for-the-badge)
 
 > **« Les futuristes qui impactent aujourd'hui. »**
