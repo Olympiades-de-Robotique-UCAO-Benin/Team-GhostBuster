@@ -1,534 +1,1611 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team GhostBuster — ORC 2026</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>GhostBuster - Suiveur de Ligne & Esquiveur d'Obstacles</title>
     <style>
-        :root {
-            --team-color: #10b981;
-            --team-color-light: #d1fae5;
-            --dark: #0f172a;
-            --text: #334155;
-            --muted: #64748b;
-            --border: #e2e8f0;
-            --bg: #f8fafc;
-            --white: #ffffff;
-        }
-
+        /* ===== RESET & VARIABLES ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            /* Couleurs GhostBusters */
+            --primary: #00FF84;
+            --primary-dark: #00CC6A;
+            --primary-light: #7AFFB5;
+            --secondary: #FFD700;
+            --accent: #FF3131;
+            
+            /* Mode sombre */
+            --bg-primary: #0A0A0F;
+            --bg-secondary: #1A1A24;
+            --bg-card: #1E1E2A;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --border-color: rgba(0, 255, 132, 0.2);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --glow: 0 0 20px rgba(0, 255, 132, 0.3);
+            
+            transition: all 0.3s ease;
+        }
+
+        /* Mode clair */
+        [data-theme="light"] {
+            --bg-primary: #F0F4F8;
+            --bg-secondary: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A2B3C;
+            --text-secondary: #4A5568;
+            --border-color: rgba(0, 255, 132, 0.3);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --glow: 0 0 20px rgba(0, 255, 132, 0.2);
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .topbar {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
+        /* ===== ANIMATIONS ===== */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { filter: drop-shadow(0 0 20px var(--primary)); }
+            50% { filter: drop-shadow(0 0 40px var(--primary)); }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-glow {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        /* ===== THEME TOGGLE ===== */
+        .theme-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
             display: flex;
             align-items: center;
-            gap: 12px;
-            position: sticky;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: var(--glow);
+            transition: all 0.3s ease;
+            color: var(--bg-primary);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        /* ===== NAVIGATION ===== */
+        nav {
+            position: fixed;
             top: 0;
-            z-index: 100;
+            width: 100%;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
-        .topbar a {
-            text-decoration: none;
-            color: var(--muted);
-            font-size: 0.85rem;
+        [data-theme="light"] nav {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 2px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
         }
 
-        .topbar a:hover {
-            color: var(--team-color);
+        .logo-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(var(--glow));
         }
 
-        .topbar-sep {
-            color: var(--border);
-            font-size: 1.2rem;
+        .nav-links {
+            display: flex;
+            gap: 2rem;
         }
 
-        .topbar-current {
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.85rem;
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 0;
         }
 
-        .topbar-right {
-            margin-left: auto;
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
         }
 
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        /* ===== HERO SECTION ===== */
         .hero {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            padding: 60px 24px 50px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            position: relative;
+            overflow: hidden;
+            margin-top: 60px;
+        }
+
+        .hero::before {
+            content: '👻';
+            position: absolute;
+            font-size: 30vw;
+            opacity: 0.03;
+            right: 0;
+            bottom: 0;
+            transform: rotate(10deg);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 132, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .hero-title {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title span {
+            color: var(--primary);
+            display: block;
+            text-shadow: var(--glow);
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat-item {
             text-align: center;
-            color: var(--white);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-visual {
+            flex: 1;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero-visual::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .ghost-icon {
+            font-size: 15rem;
+            text-align: center;
+            filter: drop-shadow(var(--glow));
+            animation: float 6s ease-in-out infinite, glowPulse 3s ease-in-out infinite;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: var(--primary);
+            color: var(--bg-primary);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-left: 1rem;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--bg-primary);
+        }
+
+        /* ===== SECTIONS ===== */
+        section {
+            padding: 5rem 5%;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+            color: var(--primary);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .section-title-center {
+            text-align: center;
+            display: block;
+        }
+
+        .section-title-center::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* ===== TEAM SECTION - PYRAMIDE 7 MEMBRES ===== */
+        .team-pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .pyramid-level {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .level-1 {
+            max-width: 300px;
+        }
+
+        .level-2 {
+            max-width: 650px;
+        }
+
+        .level-3 {
+            max-width: 1000px;
+        }
+
+        .pyramid-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 250px;
+            max-width: 300px;
+            text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="80" cy="20" r="40" fill="white" fill-opacity="0.04"/><circle cx="10" cy="80" r="30" fill="white" fill-opacity="0.04"/></svg>');
+        .pyramid-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: var(--glow);
         }
 
-        .hero-avatar {
-            width: 90px;
-            height: 90px;
-            background: rgba(255, 255, 255, 0.15);
+        .pyramid-card::before {
+            content: '👻';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0.1;
+            font-size: 2rem;
+        }
+
+        /* ===== STYLE POUR LES PHOTOS ===== */
+        .pyramid-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            overflow: hidden;
+            border: 3px solid var(--primary);
+            box-shadow: var(--glow);
+        }
+
+        .pyramid-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Style par défaut si pas de photo */
+        .pyramid-photo.default {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .pyramid-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+            color: var(--primary);
+        }
+
+        .pyramid-role {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding: 0.2rem 1rem;
+            background: rgba(0, 255, 132, 0.1);
+            border-radius: 50px;
+            display: inline-block;
+        }
+
+        .pyramid-contacts {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .pyramid-contacts a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .pyramid-contacts a:hover {
+            color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        /* ===== TECH DOMAINS ===== */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .tech-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+
+        .tech-header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tech-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .tech-header h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .tech-header p {
+            color: var(--text-secondary);
+        }
+
+        /* ===== PAGES PÔLES (ÉVOLUTION) ===== */
+        .pole-page {
+            min-height: 100vh;
+            padding: 100px 5% 5rem;
+            background: var(--bg-primary);
+        }
+
+        .pole-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .pole-header h1 {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .pole-header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .timeline {
+            max-width: 1000px;
+            margin: 3rem auto;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0.3;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            right: -30px;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content::before {
+            left: -30px;
+        }
+
+        .timeline-date {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: var(--primary);
+            color: var(--bg-primary);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .timeline-content ul {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-content li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .timeline-content li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-secondary);
+            border-radius: 5px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: var(--glow);
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.8rem 2rem;
+            background: var(--primary);
+            color: var(--bg-primary);
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+            box-shadow: var(--glow);
+        }
+
+        /* ===== ROADMAP ===== */
+        .roadmap {
+            position: relative;
+        }
+
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: calc(100% - 200px);
+            background: var(--primary);
+            opacity: 0.3;
+        }
+
+        .roadmap-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .roadmap-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .roadmap-content {
+            width: 45%;
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .roadmap-date {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: var(--primary);
+            color: var(--bg-primary);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== FAQ ===== */
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .faq-item {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: var(--primary);
+            transform: translateX(10px);
+        }
+
+        .faq-question {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .faq-answer {
+            color: var(--text-secondary);
+            padding-left: 3rem;
+        }
+
+        /* ===== CONTACT ===== */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3rem;
+        }
+
+        .contact-info {
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: rgba(0, 255, 132, 0.1);
+            transform: translateX(10px);
+        }
+
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.5rem;
+            color: var(--bg-primary);
         }
 
-        .hero-avatar svg {
-            width: 44px;
-            height: 44px;
-            stroke: white;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 4px 12px;
+        .contact-form {
+            background: var(--bg-card);
+            padding: 3rem;
             border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
         }
 
-        .hero h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            margin-bottom: 10px;
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .hero-motto {
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
             font-size: 1rem;
-            opacity: 0.85;
-            font-style: italic;
-            max-width: 500px;
-            margin: 0 auto 24px;
+            transition: all 0.3s ease;
         }
 
-        .hero-actions {
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            background: var(--bg-card);
+            padding: 3rem 5%;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
             display: flex;
-            gap: 12px;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 2rem;
         }
 
-        .btn-hero {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-hero-primary {
-            background: var(--white);
-            color: #059669;
-        }
-
-        .btn-hero-primary:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-hero-outline {
-            background: transparent;
-            color: var(--white);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .btn-hero-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-hero svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 24px;
-        }
-
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--dark);
-            margin-bottom: 16px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--team-color-light);
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .section-title svg {
-            width: 20px;
-            height: 20px;
-            color: var(--team-color);
-        }
-
-        .members-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-        }
-
-        .member-placeholder {
-            background: var(--bg);
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .robot-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 28px;
-        }
-
-        .robot-placeholder {
-            height: 200px;
-            background: var(--team-color-light);
-            border-radius: 10px;
+        .footer-links {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: #059669;
-            margin-bottom: 20px;
+            gap: 2rem;
         }
 
-        .robot-placeholder svg {
-            width: 48px;
-            height: 48px;
-            opacity: 0.5;
-        }
-
-        .robot-placeholder p {
-            font-size: 0.85rem;
-            opacity: 0.7;
-        }
-
-        .robot-specs {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-        }
-
-        .spec-item {
-            background: var(--bg);
-            border-radius: 8px;
-            padding: 12px 16px;
-        }
-
-        .spec-label {
-            font-size: 0.75rem;
-            color: var(--muted);
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .spec-value {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .log-placeholder {
-            background: var(--bg);
-            border: 2px dashed var(--border);
-            border-radius: 10px;
-            padding: 32px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.85rem;
-        }
-
-        .resources-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .resource-item {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
+        .footer-links a {
+            color: var(--text-primary);
             text-decoration: none;
-            color: var(--text);
-            transition: all 0.2s;
+            transition: color 0.3s ease;
         }
 
-        .resource-item:hover {
-            border-color: var(--team-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        .footer-links a:hover {
+            color: var(--primary);
         }
 
-        .resource-icon {
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
             width: 40px;
             height: 40px;
-            background: var(--team-color-light);
-            border-radius: 8px;
+            background: var(--bg-primary);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .resource-icon svg {
-            width: 20px;
-            height: 20px;
-            color: var(--team-color);
-        }
-
-        .resource-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--dark);
-        }
-
-        .resource-desc {
-            font-size: 0.78rem;
-            color: var(--muted);
-            margin-top: 2px;
-        }
-
-        .resource-arrow {
-            margin-left: auto;
-            color: var(--muted);
-        }
-
-        .resource-arrow svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .page-footer {
-            background: var(--dark);
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-            padding: 24px;
-            font-size: 0.82rem;
-            margin-top: 60px;
-        }
-
-        .page-footer a {
-            color: #f59e0b;
+            color: var(--text-primary);
             text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .footer-social a:hover {
+            background: var(--primary);
+            color: var(--bg-primary);
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .copyright a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* ===== PAGE NAVIGATION ===== */
+        #accueil-page, #informatique-page, #electronique-page, #mecanique-page {
+            display: none;
+        }
+
+        #accueil-page.active-page {
+            display: block;
+        }
+
+        #informatique-page.active-page,
+        #electronique-page.active-page,
+        #mecanique-page.active-page {
+            display: block;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 100px;
+            }
+
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .pyramid-level {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .level-1, .level-2, .level-3 {
+                max-width: 100%;
+            }
+
+            .tech-grid,
+            .faq-grid,
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-item,
+            .timeline-item:nth-child(even) {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-left: 60px;
+            }
+
+            .timeline-content {
+                width: 100%;
+            }
+
+            .timeline-content::before {
+                display: none;
+            }
+
+            .timeline-dot {
+                left: 30px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
+<body data-theme="dark">
+    <!-- ===== THEME TOGGLE ===== -->
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+        <span id="themeIcon">👻</span>
+    </button>
 
-<body>
-    <nav class="topbar">
-        <a href="../../index.html"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-                viewBox="0 0 24 24">
-                <path d="M19 12H5M12 5l-7 7 7 7" />
-            </svg>Retour à l'accueil</a>
-        <span class="topbar-sep">/</span>
-        <span class="topbar-current">Team GhostBuster</span>
-        <div class="topbar-right"><a href="https://github.com/Olympiades-de-Robotique-UCAO-Benin/Team-GhostBuster"
-                target="_blank"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                </svg>GitHub</a></div>
+    <!-- ===== NAVIGATION ===== -->
+    <nav id="navbar">
+        <div class="logo">
+            <span class="logo-icon">👻</span>
+            <span>GHOSTBUSTER</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" onclick="showPage('accueil'); return false;" class="active" id="nav-accueil">Accueil</a>
+            <a href="#" onclick="showPage('equipe'); return false;" id="nav-equipe">Équipe</a>
+            <a href="#" onclick="showPage('domaines'); return false;" id="nav-domaines">Domaines</a>
+            <a href="#" onclick="showPage('roadmap'); return false;" id="nav-roadmap">Roadmap</a>
+            <a href="#" onclick="showPage('contact'); return false;" id="nav-contact">Contact</a>
+        </div>
     </nav>
-    <section class="hero">
-        <div class="hero-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path
-                    d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
-            </svg>
-        </div>
-        <div class="hero-badge">Équipe #4 — ORC 2026</div>
-        <h1>Team GhostBuster</h1>
-        <p class="hero-motto">« Les futuristes qui impactent aujourd'hui. »</p>
-        <div class="hero-actions">
-            <a class="btn-hero btn-hero-primary"
-                href="https://github.com/Olympiades-de-Robotique-UCAO-Benin/Team-GhostBuster" target="_blank">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path
-                        d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-                Voir le dépôt GitHub
-            </a>
-            <a class="btn-hero btn-hero-outline" href="../../index.html">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                Toutes les équipes
-            </a>
-        </div>
-    </section>
-    <main class="container">
-        <section class="section">
-            <h2 class="section-title"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>Membres de l'équipe</h2>
-            <div class="members-grid">
-                <div class="member-placeholder" style="grid-column: 1 / -1;">Les informations sur les membres seront
-                    ajoutées prochainement par l'équipe.</div>
-            </div>
-        </section>
-        <section class="section">
-            <h2 class="section-title"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 10h.01M15 10h.01M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z" />
-                </svg>Notre Robot</h2>
-            <div class="robot-card">
-                <div class="robot-placeholder"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                    </svg>
-                    <p>Photo du robot à venir</p>
-                </div>
-                <div class="robot-specs">
-                    <div class="spec-item">
-                        <div class="spec-label">Nom du robot</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-label">Type de châssis</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-label">Capteurs</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-label">Carte de contrôle</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-label">Langage utilisé</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                    <div class="spec-item">
-                        <div class="spec-label">Stratégie</div>
-                        <div class="spec-value">—</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <section class="section">
-            <h2 class="section-title"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>Journal de bord</h2>
-            <div class="log-placeholder">Le journal de progression sera mis à jour par l'équipe au fil des séances de
-                préparation.</div>
-        </section>
-        <section class="section">
-            <h2 class="section-title"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>Ressources utiles</h2>
-            <div class="resources-list">
-                <a class="resource-item" href="https://github.com/Olympiades-de-Robotique-UCAO-Benin/Team-GhostBuster"
-                    target="_blank">
-                    <div class="resource-icon"><svg viewBox="0 0 24 24" fill="currentColor">
-                            <path
-                                d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.25 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                        </svg></div>
-                    <div>
-                        <div class="resource-title">Dépôt GitHub de l'équipe</div>
-                        <div class="resource-desc">Code source, documentation technique et fichiers du projet</div>
-                    </div>
-                    <div class="resource-arrow"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </a>
-                <a class="resource-item"
-                    href="https://github.com/Olympiades-de-Robotique-UCAO-Benin/guide-technique-officiel"
-                    target="_blank">
-                    <div class="resource-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg></div>
-                    <div>
-                        <div class="resource-title">Guide Technique Officiel</div>
-                        <div class="resource-desc">Règles, spécifications et guide de la compétition ORC 2026</div>
-                    </div>
-                    <div class="resource-arrow"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </a>
-                <a class="resource-item"
-                    href="https://github.com/Olympiades-de-Robotique-UCAO-Benin/ressources-formations" target="_blank">
-                    <div class="resource-icon"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg></div>
-                    <div>
-                        <div class="resource-title">Ressources de formation</div>
-                        <div class="resource-desc">Tutoriels Arduino, capteurs, algorithmes de suivi de ligne</div>
-                    </div>
-                    <div class="resource-arrow"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg></div>
-                </a>
-            </div>
-        </section>
-    </main>
-    <footer class="page-footer">
-        <p>ORC 2026 — Olympiade de Robotique UCAO-UUC Bénin &nbsp;·&nbsp; <a
-                href="mailto:ucaotech@ucaobenin.org">ucaotech@ucaobenin.org</a></p>
-    </footer>
-</body>
 
+    <!-- ===== PAGE ACCUEIL ===== -->
+    <div id="accueil-page" class="active-page">
+        <!-- HERO SECTION -->
+        <section id="accueil" class="hero">
+            <div class="hero-content">
+                <span class="hero-badge">Olympiades de Robotique 2025</span>
+                <h1 class="hero-title">
+                    <span>GHOSTBUSTER</span>
+                    Précision & Agilité
+                </h1>
+                <p class="hero-description">
+                    Équipe de 7 passionnés relevant le défi du robot suiveur de ligne et éviteur d'obstacles. 
+                    Innovation, Performance et Technologie au service de la compétition.
+                </p>
+                <div>
+                    <a href="#" onclick="showPage('domaines'); return false;" class="btn">Découvrir notre projet</a>
+                    <a href="#" onclick="showPage('contact'); return false;" class="btn btn-outline">Nous contacter</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">AUTONOME</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">10ms</span>
+                        <span class="stat-label">RÉACTION</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">7</span>
+                        <span class="stat-label">MEMBRES</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="ghost-icon animate-float">👻</div>
+            </div>
+        </section>
+
+        <!-- TECH DOMAINS SECTION -->
+        <section id="domaines-section" class="reveal">
+            <h2 class="section-title section-title-center">Domaines Techniques</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 3rem;">
+                Cliquez sur chaque domaine pour suivre l'évolution de notre travail
+            </p>
+            <div class="tech-grid">
+                <a href="#" onclick="showPolePage('informatique'); return false;" class="tech-card">
+                    <div class="tech-header">
+                        <div class="tech-icon">💻</div>
+                        <h3>Informatique</h3>
+                        <p>Suivi d'évolution</p>
+                    </div>
+                </a>
+                <a href="#" onclick="showPolePage('electronique'); return false;" class="tech-card">
+                    <div class="tech-header">
+                        <div class="tech-icon">🔌</div>
+                        <h3>Électronique</h3>
+                        <p>Suivi d'évolution</p>
+                    </div>
+                </a>
+                <a href="#" onclick="showPolePage('mecanique'); return false;" class="tech-card">
+                    <div class="tech-header">
+                        <div class="tech-icon">⚙️</div>
+                        <h3>Mécanique</h3>
+                        <p>Suivi d'évolution</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ===== TEAM SECTION - PYRAMIDE 7 MEMBRES AVEC PHOTOS ===== -->
+        <section id="equipe-section" class="reveal">
+            <h2 class="section-title section-title-center">Notre Équipe</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">7 membres organisés en structure pyramidale</p>
+            
+            <div class="team-pyramid">
+                <!-- NIVEAU 1 - Chef (1 personne) -->
+                <div class="pyramid-level level-1">
+                    <div class="pyramid-card">
+                        <!-- POUR AJOUTER UNE PHOTO : 
+                             1. Mettez votre image dans le dossier "images"
+                             2. Remplacez "chef-equipe.jpg" par le nom de votre fichier
+                             3. Enlevez la classe "default" et l'emoji à l'intérieur -->
+                    <div class="pyramid-photo default">
+                            <img src="images/mel.jpeg" alt="Photo du chef"> 
+                        </div>
+                        <h3>Melkisedeck DJIMADJO</h3>
+                        <div class="pyramid-role">Chef d'équipe</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:djimadjomelkisedeck@gmail.com">@</a>
+                            <a href="https://wa.me/+22967836762">📞</a>
+                          <!--  <a href="#">@</a>
+                            <a href="#">📞</a> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NIVEAU 2 - Leads (2 personnes) -->
+                <div class="pyramid-level level-2">
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                             <img src="images/berenger.jpeg" alt="Lead Informatique">
+                        </div>
+                        <h3>BOTON Bérenger</h3>
+                        <div class="pyramid-role">Lead Informatique</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:marie.c@ghostbuster.bj">@</a>
+                            <a href="https://wa.me/22997000002">📞</a>
+                           <!-- <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                            <img src="images/valerie.jpeg" alt="Lead Électronique">
+                        </div>
+                        <h3>KLOKPE Valérie</h3>
+                        <div class="pyramid-role">Lead Électronique</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:klokpevalerie@gmail.com">@</a>
+                            <a href="https://wa.me/22944998978">📞</a>
+                           <!-- <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NIVEAU 3 - Membres (4 personnes) -->
+                <div class="pyramid-level level-3">
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                            <img src="images/steav.jpeg" alt="Programmeur">
+                        </div>
+                        <h3>BINOUYO Steav</h3>
+                        <div class="pyramid-role">Programmeur</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:binouyotobi@gmail.com">@</a>
+                            <a href="https://wa.me/22998733638">📞</a>
+                         <!--   <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                            <img src="images/zaenab.jpeg" alt="Electronicien"> 
+                        </div>
+                        <h3>OKE Zaénab</h3>
+                        <div class="pyramid-role">Electronicien</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:thomas.zaenaboke05@gmail.com">@</a>
+                            <a href="https://wa.me/22999393164">📞</a>
+                          <!--  <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                             <img src="images/delphin.jpeg" alt="Mécanicien">
+                        </div>
+                        <h3>Julie LEROY</h3>
+                        <div class="pyramid-role">Mécanicienne</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:julie.l@ghostbuster.bj">@</a>
+                            <a href="https://wa.me/22952696537">📞</a>
+                           <!-- <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                    <div class="pyramid-card">
+                        <div class="pyramid-photo default">
+                             <img src="images/lucrece.jpeg" alt="Testeur"> 
+                        </div>
+                        <h3>SACCA Lucrèce</h3>
+                        <div class="pyramid-role">Intégrateur</div>
+                        <div class="pyramid-contacts">
+                            <a href="mailto:lucrecesacca@gmail.com">@</a>
+                            <a href="https://wa.me/22997000007">📞</a>
+                           <!-- <a href="#">💼</a>
+                            <a href="#">🐙</a>-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROADMAP SECTION -->
+        <section id="roadmap-section" class="reveal">
+            <h2 class="section-title section-title-center">Feuille de Route</h2>
+            <div class="roadmap">
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <span class="roadmap-date">Phase 1 - Terminée</span>
+                        <h3>Conception & Design</h3>
+                        <p>Étude du cahier des charges, premiers schémas électroniques, conception CAO du châssis et choix des composants.</p>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <span class="roadmap-date">Phase 2 - En cours</span>
+                        <h3>Prototypage</h3>
+                        <p>Développement des algorithmes de base, tests des capteurs, premiers circuits et assemblage du prototype.</p>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <span class="roadmap-date">Phase 3 - À venir</span>
+                        <h3>Tests & Optimisation</h3>
+                        <p>Tests sur piste, calibration des capteurs, optimisation du PID, amélioration de la réactivité.</p>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-content">
+                        <span class="roadmap-date">Phase 4 - Finale</span>
+                        <h3>Compétition</h3>
+                        <p>Présentation finale, démonstration en conditions réelles et passage devant le jury.</p>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section class="reveal">
+            <h2 class="section-title">Questions Fréquentes</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question"><span>🤖</span><h3>Le défi suiveur de ligne ?</h3></div>
+                    <div class="faq-answer">Le robot suit une ligne noire avec précision, même dans les virages serrés.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>⚡</span><h3>L'évitement d'obstacles ?</h3></div>
+                    <div class="faq-answer">Détection en temps réel par capteurs, réaction en moins de 10ms.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>👥</span><h3>Qui sommes-nous ?</h3></div>
+                    <div class="faq-answer">7 étudiants passionnés en structure pyramidale.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>🏆</span><h3>Notre objectif ?</h3></div>
+                    <div class="faq-answer">Décrocher la première place avec vitesse et précision.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact-section" class="reveal">
+            <h2 class="section-title">Contactez-Nous</h2>
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <div class="contact-item"><div class="contact-icon">📧</div><div><h4>Email</h4><p>ghostbuster@ucaobenin.bj</p></div></div>
+                    <div class="contact-item"><div class="contact-icon">📱</div><div><h4>Téléphone</h4><p>+229 97 XX XX XX</p></div></div>
+                    <div class="contact-item"><div class="contact-icon">📍</div><div><h4>Adresse</h4><p>UCAO-Bénin, Cotonou</p></div></div>
+                    <div class="contact-item"><div class="contact-icon">🐙</div><div><h4>GitHub</h4><p>github.com/Yoane2194/Olympiades</p></div></div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group"><input type="text" placeholder="Votre nom"></div>
+                        <div class="form-group"><input type="email" placeholder="Votre email"></div>
+                        <div class="form-group"><textarea placeholder="Votre message"></textarea></div>
+                        <button type="submit" class="btn" style="width:100%">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== PAGE INFORMATIQUE (ÉVOLUTION) ===== -->
+    <div id="informatique-page" class="pole-page">
+        <div class="pole-header">
+            <h1>💻 Informatique</h1>
+            <p>Suivi de l'évolution du travail - Semaine par semaine</p>
+        </div>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 1-2</span>
+                    <h3>Mise en place de l'environnement</h3>
+                    <ul>
+                        <li>Installation des IDE (ESP32, VS Code)</li>
+                        <li>Configuration des dépôts GitHub</li>
+                        <li>Formation sur les algorithmes PID</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:73%"></div></div>
+                    <p style="color:var(--primary)">🔄 En cours (73%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 3-4</span>
+                    <h3>Développement du suivi de ligne</h3>
+                    <ul>
+                        <li>Test des capteurs infrarouges</li>
+                        <li>Implémentation du PID de base</li>
+                        <li>Calibration sur piste test</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+                    <p style="color:var(--secondary)">🔄 En cours (40%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 5-6</span>
+                    <h3>Détection d'obstacles</h3>
+                    <ul>
+                        <li>Programmation des capteurs ultrasons</li>
+                        <li>Algorithme d'évitement</li>
+                        <li>Fusion des données capteurs</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:14%"></div></div>
+                    <p style="color:var(--text-secondary)">♻️ Début (14%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 7-8</span>
+                    <h3>Optimisation et tests</h3>
+                    <ul>
+                        <li>Optimisation du temps de réaction</li>
+                        <li>Tests intensifs sur piste</li>
+                        <li>Documentation du code</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                    <p style="color:var(--text-secondary)">⏳ Planifié</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+        </div>
+        
+        <a href="#" onclick="showPage('accueil'); return false;" class="back-btn">← Retour à l'accueil</a>
+    </div>
+
+    <!-- ===== PAGE ÉLECTRONIQUE (ÉVOLUTION) ===== -->
+    <div id="electronique-page" class="pole-page">
+        <div class="pole-header">
+            <h1>🔌 Électronique</h1>
+            <p>Suivi de l'évolution du travail - Semaine par semaine</p>
+        </div>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 1-2</span>
+                    <h3>Conception des circuits</h3>
+                    <ul>
+                        <li>Schémas électroniques sur Kicard</li>
+                        <li>Choix des composants</li>
+                        <li>Simulation des circuits</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:92%"></div></div>
+                    <p style="color:var(--primary)">✅ Presque terminé (92%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 3-4</span>
+                    <h3>Prototypage sur breadboard</h3>
+                    <ul>
+                        <li>Montage des capteurs IR</li>
+                        <li>Test des moteurs avec pont en H</li>
+                        <li>Premiers tests d'alimentation</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:53%"></div></div>
+                    <p style="color:var(--secondary)">🔄 En cours (53%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 5-6</span>
+                    <h3>Conception PCB</h3>
+                    <ul>
+                        <li>Design du circuit imprimé</li>
+                        <li>Routage des pistes</li>
+                        <li>Commande des PCB</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:10%"></div></div>
+                    <p style="color:var(--text-secondary)">♻️ Début(10%) </p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 7-8</span>
+                    <h3>Soudure et tests finaux</h3>
+                    <ul>
+                        <li>Soudure des composants</li>
+                        <li>Tests de continuité</li>
+                        <li>Validation finale</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                    <p style="color:var(--text-secondary)">⏳ Planifié</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+        </div>
+        
+        <a href="#" onclick="showPage('accueil'); return false;" class="back-btn">← Retour à l'accueil</a>
+    </div>
+
+    <!-- ===== PAGE MÉCANIQUE (ÉVOLUTION) ===== -->
+    <div id="mecanique-page" class="pole-page">
+        <div class="pole-header">
+            <h1>⚙️ Mécanique</h1>
+            <p>Suivi de l'évolution du travail - Semaine par semaine</p>
+        </div>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 1-2</span>
+                    <h3>Conception CAO</h3>
+                    <ul>
+                        <li>Modélisation du châssis sur SolidWorks</li>
+                        <li>Design des supports capteurs</li>
+                        <li>Intégration des moteurs</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+                    <p style="color:var(--primary)">🔄 En cours (70%)</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 3-4</span>
+                    <h3>Impression 3D</h3>
+                    <ul>
+                        <li>Impression des pièces PLA</li>
+                        <li>Test d'assemblage</li>
+                        <li>Ajustements des tolérances</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                    <p style="color:var(--secondary)">⏳ Planifié</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 5-6</span>
+                    <h3>Assemblage mécanique</h3>
+                    <ul>
+                        <li>Fixation des moteurs</li>
+                        <li>Montage des roues</li>
+                        <li>Installation des supports</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                    <p style="color:var(--text-secondary)">⏳ Planifié</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <span class="timeline-date">Semaine 7-8</span>
+                    <h3>Optimisation finale</h3>
+                    <ul>
+                        <li>Équilibrage du robot</li>
+                        <li>Renforcement structurel</li>
+                        <li>Tests de résistance</li>
+                    </ul>
+                    <div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div>
+                    <p style="color:var(--text-secondary)">⏳ Planifié</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+        </div>
+        
+        <a href="#" onclick="showPage('accueil'); return false;" class="back-btn">← Retour à l'accueil</a>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span>👻</span>
+                <span>GHOSTBUSTER</span>
+            </div>
+            <div class="footer-links">
+                <a href="#" onclick="showPage('accueil'); return false;">Accueil</a>
+                <a href="#" onclick="showPage('equipe'); return false;">Équipe</a>
+                <a href="#" onclick="showPage('domaines'); return false;">Domaines</a>
+                <a href="#" onclick="showPage('contact'); return false;">Contact</a>
+            </div>
+            <div class="footer-social">
+                <a href="#">📧</a>
+                <a href="#">🐙</a>
+                <a href="#">💼</a>
+                <a href="#">📱</a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 GHOSTBUSTER - Olympiades de Robotique UCAO-Bénin</p>
+            <p>Template personnalisé par l'équipe GhostBuster | <a href="https://github.com/Yoane2194/Olympiades-de-Robotique-UCAO-Benin">GitHub</a></p>
+        </div>
+         <a href="#" onclick="showPage('accueil'); return false;" class="back-btn">← Retour à l'accueil</a>
+    </footer>
+
+    <script>
+        // ===== THEME TOGGLE =====
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                icon.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.textContent = '👻';
+            }
+        }
+
+        // ===== PAGE NAVIGATION =====
+        function showPage(pageName) {
+            // Cacher toutes les pages
+            document.getElementById('accueil-page').classList.remove('active-page');
+            document.getElementById('informatique-page').classList.remove('active-page');
+            document.getElementById('electronique-page').classList.remove('active-page');
+            document.getElementById('mecanique-page').classList.remove('active-page');
+            
+            // Afficher la page demandée
+            if (pageName === 'accueil') {
+                document.getElementById('accueil-page').classList.add('active-page');
+            } else if (pageName === 'informatique') {
+                document.getElementById('informatique-page').classList.add('active-page');
+            } else if (pageName === 'electronique') {
+                document.getElementById('electronique-page').classList.add('active-page');
+            } else if (pageName === 'mecanique') {
+                document.getElementById('mecanique-page').classList.add('active-page');
+            }
+            
+            // Mettre à jour la classe active dans la navigation
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            if (pageName === 'accueil') {
+                document.getElementById('nav-accueil').classList.add('active');
+            } else if (pageName === 'equipe') {
+                document.getElementById('nav-equipe').classList.add('active');
+            } else if (pageName === 'domaines') {
+                document.getElementById('nav-domaines').classList.add('active');
+            } else if (pageName === 'roadmap') {
+                document.getElementById('nav-roadmap').classList.add('active');
+            } else if (pageName === 'contact') {
+                document.getElementById('nav-contact').classList.add('active');
+            }
+            
+            // Scroll en haut
+            window.scrollTo(0, 0);
+        }
+
+        function showPolePage(poleName) {
+            showPage(poleName);
+        }
+
+        // ===== NAVBAR SCROLL EFFECT =====
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ===== SCROLL REVEAL =====
+        function reveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const revealTop = reveals[i].getBoundingClientRect().top;
+                const revealPoint = 150;
+                if (revealTop < windowHeight - revealPoint) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+
+        window.addEventListener('scroll', reveal);
+        window.addEventListener('load', reveal);
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage('accueil');
+        });
+    </script>
+</body>
 </html>
